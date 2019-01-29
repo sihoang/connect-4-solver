@@ -88,13 +88,13 @@ const leaf = node => {
 };
 
 const evaluate = node => {
-  // TODO
   if (hasWinner(node)) {
     return node.board.currentPlayer === 0
-      ? Number.POSITIVE_INFINITY
-      : Number.NEGATIVE_INFINITY;
+      ? Number.MAX_SAFE_INTEGER
+      : Number.MIN_SAFE_INTEGER;
   }
-  return 1;
+  // TODO improve the score function
+  return Math.floor(Math.random() * 100);
 };
 
 const minimax = (node, depth) => {
