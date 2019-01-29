@@ -1,6 +1,7 @@
 import '@babel/polyfill';
 import assert from 'assert';
 import readline from 'readline';
+import _ from 'lodash';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -40,7 +41,7 @@ const validateUserInput = input => {
   for (let i = 0; i < 7; i += 1) {
     for (let j = 0; j < node.board.coord[i].length; j += 1) {
       const player = node.board.coord[i][j];
-      if (player) {
+      if (player !== undefined) {
         players[player] += 1;
       } else {
         throw new Error(`Coord ${i},${j} is supposed to have a move.`);
@@ -48,9 +49,9 @@ const validateUserInput = input => {
     }
   }
 
-  assert(players.length !== 2, `Must have 2 players.`);
+  assert(players.length === 2, `Must have 2 players.`);
 
-  assert(Math.abs(players[0] - players[1]) > 1, `Invalid number of moves.`);
+  assert(Math.abs(players[0] - players[1]) <= 1, `Invalid number of moves.`);
 
   // Player 0 is next mover by default unless it has more moves than Player 1
   node.board.nextPlayer = players[0] > players[1] ? 1 : 0;
@@ -68,7 +69,7 @@ const connect4 = (node, xPos, yPos) => {
   // check vertical
   let streak = 0;
   for (let x = 0; x < 7; x += 1) {
-    if (coord[x][yPos] === currentPlayer) {
+    if (coord[x] && coord[x][yPos] === currentPlayer) {
       streak += 1;
     } else {
       streak = 0;
@@ -95,14 +96,14 @@ const connect4 = (node, xPos, yPos) => {
   streak = 0;
   let x = xPos;
   let y = yPos;
-  while (coord[x][y] === currentPlayer && y >= 0 && x >= 0) {
+  while (coord[x] && coord[x][y] === currentPlayer && y >= 0 && x >= 0) {
     streak += 1;
     x -= 1;
     y -= 1;
   }
   x = xPos;
   y = yPos;
-  while (coord[x][y] === currentPlayer && y < 7 && x < 7) {
+  while (coord[x] && coord[x][y] === currentPlayer && y < 7 && x < 7) {
     streak += 1;
     x += 1;
     y += 1;
@@ -115,14 +116,14 @@ const connect4 = (node, xPos, yPos) => {
   streak = 0;
   x = xPos;
   y = yPos;
-  while (coord[x][y] === currentPlayer && y >= 0 && x < 7) {
+  while (coord[x] && coord[x][y] === currentPlayer && y >= 0 && x < 7) {
     streak += 1;
     x += 1;
     y -= 1;
   }
   x = xPos;
   y = yPos;
-  while (coord[x][y] === currentPlayer && y < 7 && x >= 0) {
+  while (coord[x] && coord[x][y] === currentPlayer && y < 7 && x >= 0) {
     streak += 1;
     x -= 1;
     y += 1;
@@ -137,7 +138,7 @@ const connect4 = (node, xPos, yPos) => {
 const getChildren = node => {
   const children = [];
   for (let i = 0; i < 7; i += 1) {
-    const child = Object.assign({}, node);
+    const child = _.cloneDeep(node);
     child.type = node.type === 'max' ? 'min' : 'max';
     child.board.currentPlayer = node.board.nextPlayer;
     child.board.nextPlayer = node.board.currentPlayer;
@@ -204,7 +205,7 @@ const minimax = (node, depth) => {
 const nextMoves = node => {
   const next = {};
   for (const child of getChildren(node)) {
-    next[child.board.move] = minimax(child, 10);
+    next[child.board.move] = minimax(child, 5);
   }
   return next;
 };
@@ -227,6 +228,7 @@ async function main() {
 main()
   .catch(err => {
     console.log(`Exit gracefully: ${err}`);
+    throw err;
   })
   .finally(() => {
     rl.close();
