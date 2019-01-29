@@ -103,7 +103,7 @@ const connect4 = (node, xPos, yPos) => {
   }
   x = xPos;
   y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y < 7 && x < 7) {
+  while (coord[x] && coord[x][y] === currentPlayer && y < 6 && x < 7) {
     streak += 1;
     x += 1;
     y += 1;
@@ -123,7 +123,7 @@ const connect4 = (node, xPos, yPos) => {
   }
   x = xPos;
   y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y < 7 && x >= 0) {
+  while (coord[x] && coord[x][y] === currentPlayer && y < 6 && x >= 0) {
     streak += 1;
     x -= 1;
     y += 1;
@@ -144,7 +144,7 @@ const getChildren = node => {
     child.board.nextPlayer = node.board.currentPlayer;
 
     const yPos = node.board.coord[i].length;
-    if (yPos < 7) {
+    if (yPos < 6) {
       child.board.coord[i].push(child.board.currentPlayer);
       // TODO check if this is a winning move for child.board.currentPlayer
       if (connect4(child, i, yPos)) {
