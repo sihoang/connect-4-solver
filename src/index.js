@@ -6,21 +6,44 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const readUserInput = (question) => {
+const readUserInput = question => {
   return new Promise((resolve, reject) => {
     rl.question(question, answer => {
       if (answer === 'quit') {
-        reject('exiting');
+        reject(new Error('killed by user.'));
       } else {
-        resolve(answer)
+        resolve(answer);
       }
     });
-  })
+  });
 };
+
+const validateUserInput = input => {
+  return !!input;
+};
+
+const nextMoves = input => {
+  return input;
+};
+
 async function main() {
   console.log('Connect 4 Solver');
+  let input = '';
+  while (true) {
+    input = await readUserInput('Enter game state: ');
+    if (validateUserInput(input)) {
+      break;
+    } else {
+      console.log('Invalid input. Try again!');
+    }
+  }
+  console.log(nextMoves(input));
 }
 
-main().finally(() => {
-  rl.close();
-});
+main()
+  .catch(err => {
+    console.log(`Exit gracefully: ${err}`);
+  })
+  .finally(() => {
+    rl.close();
+  });
