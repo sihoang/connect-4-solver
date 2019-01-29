@@ -20,9 +20,11 @@ const readUserInput = question => {
 };
 
 // String of "player,x-pos,y-pos player,x-pos,y-pos"
+// Self: Player 0
+// Oponent: Player 1
 const validateUserInput = input => {
   const node = {
-    type: 'max', // always aim for first move winner
+    type: 'min', // always start out with opponent move
     board: {
       coord: [[], [], [], [], [], [], []],
     },
@@ -57,14 +59,9 @@ const validateUserInput = input => {
   return node;
 };
 
-const leaf = node => {
+const hasWinner = node => {
   // TODO
   return !!node;
-};
-
-const evaluate = node => {
-  // TODO
-  return 1;
 };
 
 const getChildren = node => {
@@ -77,10 +74,27 @@ const getChildren = node => {
 
     if (node.board.coord[i].length < 7) {
       child.board.coord[i].push(child.board.currentPlayer);
+      child.board.move = `${child.board.currentPlayer},${i},${
+        node.board.coord[i].length
+      }`;
       children.push(child);
     }
   }
   return children;
+};
+
+const leaf = node => {
+  return getChildren(node).length === 0 || hasWinner(node);
+};
+
+const evaluate = node => {
+  // TODO
+  if (hasWinner(node)) {
+    return node.board.currentPlayer === 0
+      ? Number.POSITIVE_INFINITY
+      : Number.NEGATIVE_INFINITY;
+  }
+  return 1;
 };
 
 const minimax = (node, depth) => {
@@ -109,11 +123,17 @@ const minimax = (node, depth) => {
     }
     return v;
   }
+
+  assert.fail('Not supposed to reach here!');
+  return null;
 };
 
-const nextMoves = input => {
-  // TODO
-  return input;
+const nextMoves = node => {
+  const next = {};
+  for (const child of getChildren(node)) {
+    next[child.board.move] = minimax(child, 10);
+  }
+  return next;
 };
 
 async function main() {
