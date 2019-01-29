@@ -3,6 +3,8 @@ import assert from 'assert';
 import readline from 'readline';
 import _ from 'lodash';
 
+const DEFAULT_DEPTH = 6;
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -171,7 +173,7 @@ const evaluate = node => {
   return Math.floor(Math.random() * 100);
 };
 
-const minimax = (node, depth) => {
+const minimax = (node, depth = DEFAULT_DEPTH) => {
   if (leaf(node) || depth === 0) {
     return evaluate(node);
   }
@@ -205,7 +207,7 @@ const minimax = (node, depth) => {
 const nextMoves = node => {
   const next = {};
   for (const child of getChildren(node)) {
-    next[child.board.move] = minimax(child, 5);
+    next[child.board.move] = minimax(child);
   }
   return next;
 };
