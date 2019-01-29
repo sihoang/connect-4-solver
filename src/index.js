@@ -24,7 +24,7 @@ const readUserInput = question => {
 // Oponent: Player 1
 const validateUserInput = input => {
   const node = {
-    type: 'min', // always start out with opponent move
+    type: 'min', // always start out with self next move
     board: {
       coord: [[], [], [], [], [], [], []],
     },
@@ -60,8 +60,78 @@ const validateUserInput = input => {
 };
 
 const hasWinner = node => {
-  // TODO
-  return !!node;
+  return node.board.winner;
+};
+
+const connect4 = (node, xPos, yPos) => {
+  const { currentPlayer, coord } = node.board;
+  // check vertical
+  let streak = 0;
+  for (let x = 0; x < 7; x += 1) {
+    if (coord[x][yPos] === currentPlayer) {
+      streak += 1;
+    } else {
+      streak = 0;
+    }
+  }
+  if (streak > 3) {
+    return true;
+  }
+
+  // check horizontal
+  streak = 0;
+  for (let y = 0; y < coord[xPos].length; y += 1) {
+    if (coord[xPos][y] === currentPlayer) {
+      streak += 1;
+    } else {
+      streak = 0;
+    }
+  }
+  if (streak > 3) {
+    return true;
+  }
+
+  // check forward slash
+  streak = 0;
+  let x = xPos;
+  let y = yPos;
+  while (coord[x][y] === currentPlayer && y >= 0 && x >= 0) {
+    streak += 1;
+    x -= 1;
+    y -= 1;
+  }
+  x = xPos;
+  y = yPos;
+  while (coord[x][y] === currentPlayer && y < 7 && x < 7) {
+    streak += 1;
+    x += 1;
+    y += 1;
+  }
+  if (streak > 3) {
+    return true;
+  }
+
+  // check backward slash
+  streak = 0;
+  x = xPos;
+  y = yPos;
+  while (coord[x][y] === currentPlayer && y >= 0 && x < 7) {
+    streak += 1;
+    x += 1;
+    y -= 1;
+  }
+  x = xPos;
+  y = yPos;
+  while (coord[x][y] === currentPlayer && y < 7 && x >= 0) {
+    streak += 1;
+    x -= 1;
+    y += 1;
+  }
+  if (streak > 3) {
+    return true;
+  }
+
+  return false;
 };
 
 const getChildren = node => {
@@ -72,11 +142,14 @@ const getChildren = node => {
     child.board.currentPlayer = node.board.nextPlayer;
     child.board.nextPlayer = node.board.currentPlayer;
 
-    if (node.board.coord[i].length < 7) {
+    const yPos = node.board.coord[i].length;
+    if (yPos < 7) {
       child.board.coord[i].push(child.board.currentPlayer);
-      child.board.move = `${child.board.currentPlayer},${i},${
-        node.board.coord[i].length
-      }`;
+      // TODO check if this is a winning move for child.board.currentPlayer
+      if (connect4(child, i, yPos)) {
+        child.board.winner = child.board.currentPlayer;
+      }
+      child.board.move = `${child.board.currentPlayer},${i},${yPos}`;
       children.push(child);
     }
   }
