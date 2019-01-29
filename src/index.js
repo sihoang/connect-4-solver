@@ -27,7 +27,6 @@ const readUserInput = question => {
 // Oponent: Player 1
 const validateUserInput = input => {
   const node = {
-    type: 'min', // always start out with self next move
     board: {
       coord: [[], [], [], [], [], [], []],
     },
@@ -58,6 +57,9 @@ const validateUserInput = input => {
   // Player 0 is next mover by default unless it has more moves than Player 1
   node.board.nextPlayer = players[0] > players[1] ? 1 : 0;
   node.board.currentPlayer = 1 - node.board.nextPlayer;
+
+  // Get player 0 to win
+  node.type = node.board.currentPlayer === 0 ? 'max' : 'min';
 
   return node;
 };
