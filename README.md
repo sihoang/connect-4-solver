@@ -3,8 +3,15 @@
 
 ### Instructions
 ```
-TODO
+yarn
+
+yarn start
 ```
+
+- The input has this format: `player0,xPos0,yPos0 player1,xPos1,yPos1 ...`  For example: 0,0,0 1,0,1 0,1,0 1,1,1
+- It will keep appending move(s) at every prompt.
+- By default, the player 0 is self and player 1 is opponent.  Next move is optimized for player 0.
+- Default depth for minimax search is 6.
 
 
 ### License
