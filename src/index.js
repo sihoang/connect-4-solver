@@ -214,24 +214,22 @@ const nextMoves = node => {
 
 async function main() {
   console.log('Connect 4 Solver');
-  let node;
+  let moves = '';
   while (true) {
-    const userInput = await readUserInput('Enter game state: ');
+    const userInput = await readUserInput('Enter move(s): ');
     try {
-      node = validateUserInput(userInput);
-      break;
+      const currentMoves = `${moves} ${userInput}`.trim();
+      console.log(`Current game state: ${currentMoves}`);
+
+      const node = validateUserInput(currentMoves);
+      console.log(nextMoves(node));
+      moves = currentMoves;
     } catch (e) {
       console.log(`Invalid input. Try again! Error: ${e}`);
     }
   }
-  console.log(nextMoves(node));
 }
 
-main()
-  .catch(err => {
-    console.log(`Exit gracefully: ${err}`);
-    throw err;
-  })
-  .finally(() => {
-    rl.close();
-  });
+main().finally(() => {
+  rl.close();
+});
