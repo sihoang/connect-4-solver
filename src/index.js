@@ -105,9 +105,7 @@ const leaf = node => {
 
 const evaluate = node => {
   if (hasWinner(node)) {
-    return node.currentPlayer === 0
-      ? Number.MAX_SAFE_INTEGER
-      : Number.MIN_SAFE_INTEGER;
+    return node.currentPlayer === 0 ? 200 : -200;
   }
   // TODO improve the score function
   return Math.floor(Math.random() * 100);
@@ -119,7 +117,7 @@ const minimax = (node, depth = DEFAULT_DEPTH) => {
   }
 
   if (node.type === 'max') {
-    let v = Number.NEGATIVE_INFINITY;
+    let v = Number.MIN_SAFE_INTEGER;
     for (const child of getChildren(node)) {
       const vprime = minimax(child, depth - 1);
       if (vprime > v) {
@@ -130,7 +128,7 @@ const minimax = (node, depth = DEFAULT_DEPTH) => {
   }
 
   if (node.type === 'min') {
-    let v = Number.POSITIVE_INFINITY;
+    let v = Number.MAX_SAFE_INTEGER;
     for (const child of getChildren(node)) {
       const vprime = minimax(child, depth - 1);
       if (vprime < v) {
