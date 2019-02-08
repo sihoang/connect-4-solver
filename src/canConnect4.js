@@ -5,15 +5,16 @@ export default (node, xPos, yPos) => {
 
   // check horizontal
   let streak = 0;
+
   for (let x = 0; x < BOARD_WIDTH; x += 1) {
     if (coord[x] && coord[x][yPos] === currentPlayer) {
       streak += 1;
     } else {
       streak = 0;
     }
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
+    if (streak === WINNING_STREAK) {
+      return true;
+    }
   }
 
   // check vertical
@@ -24,9 +25,9 @@ export default (node, xPos, yPos) => {
     } else {
       streak = 0;
     }
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
+    if (streak === WINNING_STREAK) {
+      return true;
+    }
   }
 
   // check forward slash
@@ -51,7 +52,7 @@ export default (node, xPos, yPos) => {
     x += 1;
     y += 1;
   }
-  if (streak >= WINNING_STREAK) {
+  if (streak > WINNING_STREAK) {
     return true;
   }
 
@@ -82,7 +83,7 @@ export default (node, xPos, yPos) => {
     x -= 1;
     y += 1;
   }
-  if (streak >= WINNING_STREAK) {
+  if (streak > WINNING_STREAK) {
     return true;
   }
 
