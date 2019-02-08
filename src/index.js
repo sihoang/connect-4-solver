@@ -3,7 +3,12 @@ import assert from 'assert';
 import readline from 'readline';
 import _ from 'lodash';
 
+// look ahead of 6 moves
 const DEFAULT_DEPTH = 6;
+
+const BOARD_WIDTH = 7;
+const BOARD_HEIGHT = 6;
+const WINNING_STREAK = 4;
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -28,7 +33,11 @@ const readUserInput = question => {
 const validateUserInput = input => {
   const node = {
     board: {
-      coord: [[], [], [], [], [], [], []],
+      // height is dynamically growing
+      // so that we can get the coord[xPos].length
+      // use map because fill will copy the reference
+      // and fill the array with references to that object
+      coord: new Array(BOARD_WIDTH).fill([]).map(() => []),
     },
   };
 
@@ -38,25 +47,32 @@ const validateUserInput = input => {
     node.board.coord[Number(x)][Number(y)] = Number(player);
   }
 
-  const players = [0, 0];
-  for (let i = 0; i < 7; i += 1) {
+  // Rotate 90 degree
+  console.log(node.board.coord);
+
+  // array of player's moves: [ <# of player 0's moves>, <# of player 1's moves> ]
+  const moveCounts = [0, 0];
+  for (let i = 0; i < BOARD_WIDTH; i += 1) {
     for (let j = 0; j < node.board.coord[i].length; j += 1) {
       const player = node.board.coord[i][j];
       if (player !== undefined) {
-        players[player] += 1;
+        moveCounts[player] += 1;
       } else {
         throw new Error(`Coord ${i},${j} is supposed to have a move.`);
       }
     }
   }
 
-  assert(players.length === 2, `Must have 2 players.`);
+  assert(moveCounts.length === 2, `Must have 2 players.`);
 
-  assert(Math.abs(players[0] - players[1]) <= 1, `Invalid number of moves.`);
+  assert(
+    moveCounts[1] === moveCounts[0] || moveCounts[1] - moveCounts[0] === 1,
+    `Invalid number of moves. Play 1's moves must be equal or greater than Player 0's move by 1`,
+  );
 
-  // Player 0 is next mover by default unless it has more moves than Player 1
-  node.board.nextPlayer = players[0] > players[1] ? 1 : 0;
-  node.board.currentPlayer = 1 - node.board.nextPlayer;
+  // Player 0 is next mover
+  node.board.currentPlayer = 1;
+  node.board.nextPlayer = 0;
 
   // Get player 0 to win
   node.type = node.board.currentPlayer === 0 ? 'max' : 'min';
@@ -70,20 +86,21 @@ const hasWinner = node => {
 
 const connect4 = (node, xPos, yPos) => {
   const { currentPlayer, coord } = node.board;
-  // check vertical
+
+  // check horizontal
   let streak = 0;
-  for (let x = 0; x < 7; x += 1) {
+  for (let x = 0; x < BOARD_WIDTH; x += 1) {
     if (coord[x] && coord[x][yPos] === currentPlayer) {
       streak += 1;
     } else {
       streak = 0;
     }
   }
-  if (streak > 3) {
+  if (streak >= WINNING_STREAK) {
     return true;
   }
 
-  // check horizontal
+  // check vertical
   streak = 0;
   for (let y = 0; y < coord[xPos].length; y += 1) {
     if (coord[xPos][y] === currentPlayer) {
@@ -92,7 +109,7 @@ const connect4 = (node, xPos, yPos) => {
       streak = 0;
     }
   }
-  if (streak > 3) {
+  if (streak >= WINNING_STREAK) {
     return true;
   }
 
@@ -105,14 +122,20 @@ const connect4 = (node, xPos, yPos) => {
     x -= 1;
     y -= 1;
   }
+
   x = xPos;
   y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y < 6 && x < 7) {
+  while (
+    coord[x] &&
+    coord[x][y] === currentPlayer &&
+    y < BOARD_HEIGHT &&
+    x < BOARD_WIDTH
+  ) {
     streak += 1;
     x += 1;
     y += 1;
   }
-  if (streak > 3) {
+  if (streak >= WINNING_STREAK) {
     return true;
   }
 
@@ -120,19 +143,30 @@ const connect4 = (node, xPos, yPos) => {
   streak = 0;
   x = xPos;
   y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y >= 0 && x < 7) {
+  while (
+    coord[x] &&
+    coord[x][y] === currentPlayer &&
+    y >= 0 &&
+    x < BOARD_WIDTH
+  ) {
     streak += 1;
     x += 1;
     y -= 1;
   }
+
   x = xPos;
   y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y < 6 && x >= 0) {
+  while (
+    coord[x] &&
+    coord[x][y] === currentPlayer &&
+    y < BOARD_HEIGHT &&
+    x >= 0
+  ) {
     streak += 1;
     x -= 1;
     y += 1;
   }
-  if (streak > 3) {
+  if (streak >= WINNING_STREAK) {
     return true;
   }
 
@@ -141,16 +175,15 @@ const connect4 = (node, xPos, yPos) => {
 
 const getChildren = node => {
   const children = [];
-  for (let i = 0; i < 7; i += 1) {
+  for (let i = 0; i < BOARD_WIDTH; i += 1) {
     const child = _.cloneDeep(node);
     child.type = node.type === 'max' ? 'min' : 'max';
     child.board.currentPlayer = node.board.nextPlayer;
     child.board.nextPlayer = node.board.currentPlayer;
 
     const yPos = node.board.coord[i].length;
-    if (yPos < 6) {
+    if (yPos < BOARD_HEIGHT) {
       child.board.coord[i].push(child.board.currentPlayer);
-      // TODO check if this is a winning move for child.board.currentPlayer
       if (connect4(child, i, yPos)) {
         child.board.winner = child.board.currentPlayer;
       }
