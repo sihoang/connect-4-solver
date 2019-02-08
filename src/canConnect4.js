@@ -1,7 +1,7 @@
 import { BOARD_WIDTH, BOARD_HEIGHT, WINNING_STREAK } from './configs';
 
 export default (node, xPos, yPos) => {
-  const { currentPlayer, coord } = node.board;
+  const { currentPlayer, coord } = node;
 
   // check horizontal
   let streak = 0;

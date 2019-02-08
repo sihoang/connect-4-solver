@@ -29,29 +29,33 @@ const readUserInput = question => {
 // Oponent: Player 1
 const validateUserInput = input => {
   const node = {
-    board: {
-      // height is dynamically growing
-      // so that we can get the coord[xPos].length
-      // use map because fill will copy the reference
-      // and fill the array with references to that object
-      coord: new Array(BOARD_WIDTH).fill([]).map(() => []),
-    },
+    // height is dynamically growing
+    // so that we can get the coord[xPos].length
+    // use map because fill will copy the reference
+    // and fill the array with references to that object
+    coord: new Array(BOARD_WIDTH).fill([]).map(() => []),
+    // Player 0 is next mover
+    // Get player 0 to win
+    nextPlayer: 0,
+    type: 'max',
+    currentPlayer: 1,
+    winner: null,
   };
 
   const moves = input.split(' ');
   for (const move of moves) {
     const [player, x, y] = move.split(',');
-    node.board.coord[Number(x)][Number(y)] = Number(player);
+    node.coord[Number(x)][Number(y)] = Number(player);
   }
 
   // Rotate 90 degree
-  console.log(node.board.coord);
+  console.log(node.coord);
 
   // array of player's moves: [ <# of player 0's moves>, <# of player 1's moves> ]
   const moveCounts = [0, 0];
   for (let i = 0; i < BOARD_WIDTH; i += 1) {
-    for (let j = 0; j < node.board.coord[i].length; j += 1) {
-      const player = node.board.coord[i][j];
+    for (let j = 0; j < node.coord[i].length; j += 1) {
+      const player = node.coord[i][j];
       if (player !== undefined) {
         moveCounts[player] += 1;
       } else {
@@ -67,18 +71,11 @@ const validateUserInput = input => {
     `Invalid number of moves. Play 1's moves must be equal or greater than Player 0's move by 1`,
   );
 
-  // Player 0 is next mover
-  node.board.currentPlayer = 1;
-  node.board.nextPlayer = 0;
-
-  // Get player 0 to win
-  node.type = node.board.currentPlayer === 0 ? 'max' : 'min';
-
   return node;
 };
 
 const hasWinner = node => {
-  return node.board.winner;
+  return node.winner === 0 || node.winner === 1;
 };
 
 const getChildren = node => {
@@ -86,16 +83,16 @@ const getChildren = node => {
   for (let i = 0; i < BOARD_WIDTH; i += 1) {
     const child = _.cloneDeep(node);
     child.type = node.type === 'max' ? 'min' : 'max';
-    child.board.currentPlayer = node.board.nextPlayer;
-    child.board.nextPlayer = node.board.currentPlayer;
+    child.currentPlayer = node.nextPlayer;
+    child.nextPlayer = node.currentPlayer;
 
-    const yPos = node.board.coord[i].length;
+    const yPos = node.coord[i].length;
     if (yPos < BOARD_HEIGHT) {
-      child.board.coord[i].push(child.board.currentPlayer);
+      child.coord[i].push(child.currentPlayer);
       if (canConnect4(child, i, yPos)) {
-        child.board.winner = child.board.currentPlayer;
+        child.winner = child.currentPlayer;
       }
-      child.board.move = `${child.board.currentPlayer},${i},${yPos}`;
+      child.move = `${child.currentPlayer},${i},${yPos}`;
       children.push(child);
     }
   }
@@ -108,7 +105,7 @@ const leaf = node => {
 
 const evaluate = node => {
   if (hasWinner(node)) {
-    return node.board.currentPlayer === 0
+    return node.currentPlayer === 0
       ? Number.MAX_SAFE_INTEGER
       : Number.MIN_SAFE_INTEGER;
   }
@@ -150,7 +147,7 @@ const minimax = (node, depth = DEFAULT_DEPTH) => {
 const nextMoves = node => {
   const next = {};
   for (const child of getChildren(node)) {
-    next[child.board.move] = minimax(child);
+    next[child.move] = minimax(child);
   }
   return next;
 };
