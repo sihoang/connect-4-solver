@@ -3,12 +3,9 @@ import assert from 'assert';
 import readline from 'readline';
 import _ from 'lodash';
 
-// look ahead of 6 moves
-const DEFAULT_DEPTH = 6;
+import { DEFAULT_DEPTH, BOARD_WIDTH, BOARD_HEIGHT } from './configs';
 
-const BOARD_WIDTH = 7;
-const BOARD_HEIGHT = 6;
-const WINNING_STREAK = 4;
+import canConnect4 from './canConnect4';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -84,95 +81,6 @@ const hasWinner = node => {
   return node.board.winner;
 };
 
-const connect4 = (node, xPos, yPos) => {
-  const { currentPlayer, coord } = node.board;
-
-  // check horizontal
-  let streak = 0;
-  for (let x = 0; x < BOARD_WIDTH; x += 1) {
-    if (coord[x] && coord[x][yPos] === currentPlayer) {
-      streak += 1;
-    } else {
-      streak = 0;
-    }
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
-  }
-
-  // check vertical
-  streak = 0;
-  for (let y = 0; y < coord[xPos].length; y += 1) {
-    if (coord[xPos][y] === currentPlayer) {
-      streak += 1;
-    } else {
-      streak = 0;
-    }
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
-  }
-
-  // check forward slash
-  streak = 0;
-  let x = xPos;
-  let y = yPos;
-  while (coord[x] && coord[x][y] === currentPlayer && y >= 0 && x >= 0) {
-    streak += 1;
-    x -= 1;
-    y -= 1;
-  }
-
-  x = xPos;
-  y = yPos;
-  while (
-    coord[x] &&
-    coord[x][y] === currentPlayer &&
-    y < BOARD_HEIGHT &&
-    x < BOARD_WIDTH
-  ) {
-    streak += 1;
-    x += 1;
-    y += 1;
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
-  }
-
-  // check backward slash
-  streak = 0;
-  x = xPos;
-  y = yPos;
-  while (
-    coord[x] &&
-    coord[x][y] === currentPlayer &&
-    y >= 0 &&
-    x < BOARD_WIDTH
-  ) {
-    streak += 1;
-    x += 1;
-    y -= 1;
-  }
-
-  x = xPos;
-  y = yPos;
-  while (
-    coord[x] &&
-    coord[x][y] === currentPlayer &&
-    y < BOARD_HEIGHT &&
-    x >= 0
-  ) {
-    streak += 1;
-    x -= 1;
-    y += 1;
-  }
-  if (streak >= WINNING_STREAK) {
-    return true;
-  }
-
-  return false;
-};
-
 const getChildren = node => {
   const children = [];
   for (let i = 0; i < BOARD_WIDTH; i += 1) {
@@ -184,7 +92,7 @@ const getChildren = node => {
     const yPos = node.board.coord[i].length;
     if (yPos < BOARD_HEIGHT) {
       child.board.coord[i].push(child.board.currentPlayer);
-      if (connect4(child, i, yPos)) {
+      if (canConnect4(child, i, yPos)) {
         child.board.winner = child.board.currentPlayer;
       }
       child.board.move = `${child.board.currentPlayer},${i},${yPos}`;
