@@ -24,7 +24,19 @@ const readUserInput = question => {
   });
 };
 
+const printCoord = coord => {
+  for (let y = BOARD_HEIGHT - 1; y >= 0; y -= 1) {
+    const line = [];
+    for (let x = 0; x < BOARD_WIDTH; x += 1) {
+      const value = coord[x][y] === undefined ? '-' : coord[x][y].toString();
+      line.push(value);
+    }
+    console.log(line);
+  }
+};
+
 // String of "player,x-pos,y-pos player,x-pos,y-pos"
+// Position starts with (1,1)
 // Self: Player 0
 // Oponent: Player 1
 const validateUserInput = input => {
@@ -45,11 +57,13 @@ const validateUserInput = input => {
   const moves = input.split(' ');
   for (const move of moves) {
     const [player, x, y] = move.split(',');
-    node.coord[Number(x)][Number(y)] = Number(player);
+    // Human's index starts with 1 instead of 0
+    assert(x > 0 && y > 0, 'Position index starts with 1 instead of 0');
+    node.coord[Number(x) - 1][Number(y) - 1] = Number(player);
   }
 
   // Rotate 90 degree
-  console.log(node.coord);
+  printCoord(node.coord);
 
   // array of player's moves: [ <# of player 0's moves>, <# of player 1's moves> ]
   const moveCounts = [0, 0];
@@ -68,7 +82,7 @@ const validateUserInput = input => {
 
   assert(
     moveCounts[1] === moveCounts[0] || moveCounts[1] - moveCounts[0] === 1,
-    `Invalid number of moves. Play 1's moves must be equal or greater than Player 0's move by 1`,
+    `Play 1's moves must be equal or greater than Player 0's move by 1. Move counts ${moveCounts}`,
   );
 
   return node;
@@ -92,7 +106,8 @@ const getChildren = node => {
       if (canConnect4(child, i, yPos)) {
         child.winner = child.currentPlayer;
       }
-      child.move = `${child.currentPlayer},${i},${yPos}`;
+      // Human readable
+      child.move = `${child.currentPlayer},${i + 1},${yPos + 1}`;
       children.push(child);
     }
   }
