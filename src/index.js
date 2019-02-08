@@ -108,6 +108,7 @@ const getChildren = node => {
       }
       // Human readable
       child.move = `${child.currentPlayer},${i + 1},${yPos + 1}`;
+
       children.push(child);
     }
   }
@@ -115,42 +116,53 @@ const getChildren = node => {
 };
 
 const leaf = node => {
-  return getChildren(node).length === 0 || hasWinner(node);
+  if (hasWinner(node)) {
+    return true;
+  }
+
+  // check if there're still slot
+  for (let i = 0; i < BOARD_WIDTH; i += 1) {
+    if (node.coord[i].length < BOARD_HEIGHT) {
+      return false;
+    }
+  }
+  // no more slot
+  return true;
 };
 
 const evaluate = node => {
   if (hasWinner(node)) {
-    return node.currentPlayer === 0 ? 200 : -200;
+    return node.winner === 0 ? 1000 : -1000;
   }
   // TODO improve the score function
   return Math.floor(Math.random() * 100);
 };
 
 const minimax = (node, depth = DEFAULT_DEPTH) => {
-  if (leaf(node) || depth === 0) {
+  if (depth === 0 || leaf(node)) {
     return evaluate(node);
   }
 
   if (node.type === 'max') {
-    let v = Number.MIN_SAFE_INTEGER;
+    let vMin = Number.MIN_SAFE_INTEGER;
     for (const child of getChildren(node)) {
-      const vprime = minimax(child, depth - 1);
-      if (vprime > v) {
-        v = vprime;
+      const vPrime = minimax(child, depth - 1);
+      if (vPrime > vMin) {
+        vMin = vPrime;
       }
     }
-    return v;
+    return vMin;
   }
 
   if (node.type === 'min') {
-    let v = Number.MAX_SAFE_INTEGER;
+    let vMax = Number.MAX_SAFE_INTEGER;
     for (const child of getChildren(node)) {
-      const vprime = minimax(child, depth - 1);
-      if (vprime < v) {
-        v = vprime;
+      const vPrime = minimax(child, depth - 1);
+      if (vPrime < vMax) {
+        vMax = vPrime;
       }
     }
-    return v;
+    return vMax;
   }
 
   assert.fail('Not supposed to reach here!');
